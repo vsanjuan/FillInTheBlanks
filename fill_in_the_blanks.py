@@ -65,16 +65,16 @@ def replace_string(question,string,text):
     if question in words or question+"s" in words or question+"." in words:
         # if the word before the question has a . the string is capitalized
         # if the question has an s at the end the s is added to the string
-        for i in range(len(words)):
-            if question == words[i] or question+"s"==words[i]:
-                if words[i-1][-1:] == "." and question+"s"==words[i]:
-                    words[i] = string.capitalize() + "s"
-                elif  words[i-1][-1:] ==".":
-                    words[i] = string.capitalize()
-                elif  question+"s"==words[i]:
-                    words[i] = string + "s"
+        for word_index in range(len(words)):
+            if question == words[word_index] or question+"s"==words[word_index]:
+                if words[word_index-1][-1:] == "." and question+"s"==words[word_index]:
+                    words[word_index] = string.capitalize() + "s"
+                elif  words[word_index-1][-1:] ==".":
+                    words[word_index] = string.capitalize()
+                elif  question+"s"==words[word_index]:
+                    words[word_index] = string + "s"
                 else:
-                    words[i] = string
+                    words[word_index] = string
         
         return " ".join(words)            
     return False

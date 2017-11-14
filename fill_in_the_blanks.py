@@ -23,7 +23,7 @@ tuple, and ___4___ or can be more complicated such as objects and lambda functio
 
 easy = '''In Python, anonymous ___1___ is a ___1___ that is defined without a name. While normal 
           ___1___s are defined using the def ___2___ , in Python anonymous ___1___s are defined 
-          using the ___3___ ___2___ . Hence, anonymous ___1___s are also called ___3___ ___1___s .'''
+          using the ___3___ ___2___ . Hence, anonymous ___1___s are also ___4___ ___3___ ___1___s .'''
 
 medium = '''A python ___1___ is an unordered collection of items. While other compound data types have 
           only value as an element, a ___1___ has a key: value ___2___ . ___1___s are optimized to 
@@ -40,13 +40,16 @@ difficult = '''Python is an ___1___ programming language. ___1___ programming (O
 options = {'easy':easy,'medium':medium,'difficult':difficult}
 trials_selection = {'easy':5,'medium':3,'difficult':2}
 
-answer_list_easy = {"___1___":"function","___2___":"keyword","___3___":"lambda"}
+answer_list_easy = {"___1___":"function","___2___":"keyword","___3___":"lambda","___4___":"called"}
 answer_list_medium = {"___1___":"dictionary","___2___":"pair","___3___":"braces","___4___":"comma"}
 answer_list_difficult = {"___1___":"object-oriented","___2___":"reusable","___3___":"procedural","___4___":"maintenable"}
 
 answer_options = {'easy':answer_list_easy,'medium':answer_list_medium,'difficult':answer_list_difficult}
 
 def check_answer(question,answer,answer_list):
+    # Function takes as parameters, a question, an answer and a answer list.
+    # Finds if the answer matches the question looking at the dictionary and
+    # returns a boolean.
     
     right_answer = answer_list[question]
     
@@ -57,13 +60,11 @@ def check_answer(question,answer,answer_list):
     return False
     
 def replace_string(question,string,text):
-    
+    # Replaces the question find in the text by the string
     words = text.split()
-    
     if question in words or question+"s" in words or question+"." in words:
-        
         # if the word before the question has a . the string is capitalized
-        # if it has an s the s is added to the string
+        # if the question has an s at the end the s is added to the string
         for i in range(len(words)):
             if question == words[i] or question+"s"==words[i]:
                 if words[i-1][-1:] == "." and question+"s"==words[i]:
@@ -76,43 +77,39 @@ def replace_string(question,string,text):
                     words[i] = string
         
         return " ".join(words)            
-        
     return False
     
 def get_user_input(question):
-    
+    # takes a question an returns the answer from the user.
     return raw_input(question).strip()
     
 def make_question(answer_list, updated_text):
-    
-    # convert the text in a list
-    text_list = updated_text.split()
-    question = ""
+# Takes as input a text and a list of questions and returns the first question.
+    text_list,question = updated_text.split(),""
     questions = answer_list.keys()
-    # find the first word in the text that matches a value to 
-    # to question
+    # find the first word in the text that matches a question
     for word in text_list:
         if word in questions or word[:-1] in questions:
-            # add the value to the question 
+            # takes out the last character is is a dot 
             if word[-1:] == ".":
                 question = word[:-1]
             else:
                 question =  word
             return question
-            
     # if no value was found means all the question have been answered
     return False
     
 def check_quiz_not_completed(answer_list,quiz):
+    # Checks if there are any questions left in the text. Returns a boolean
     for value in answer_list.keys():
         if value in quiz:
             return True
             
     return False
-
     
 def select_difficulty():
-    
+    # Takes as input the difficulty game level from the user and return the 
+    # selection, with the text to play, number of trials and the solution.
     not_selected = True
     options_message = "Which level do you wan to try, easy, medium or difficult? "
     
@@ -127,17 +124,13 @@ def select_difficulty():
             not_selected = False
             
             return selection, quiz, total_trials, answer_list
-            
         else:
             print "Wrong option"
             
-
-def play_game():
-    
             
-    selection, quiz, total_trials, answer_list = select_difficulty() 
-    quiz_not_completed = True
-    trials = 0
+def print_game_start(selection, total_trials, quiz):
+    # Prints a message according the the difficulty level, number of trials and
+    # the quiz
     
     print "This is the quiz. Read the text and figure out the value of each number."
     print ("As you selected the %s level you have %s trials for each fill in." % (selection, total_trials))
@@ -145,44 +138,80 @@ def play_game():
     print quiz
     print "*"*120 + "\n"
     
+def print_quiz(quiz):
+    # prints the quiz with an * line separating from other inputs displayed
+    
+    print "*"*120 + "\n"    
+    print quiz
+    print "*"*120 + "\n"
+    
+def no_trials_left():
+    # execute the appropiate action when no trials are left
+    print "The game is over. You have no trials left."
+    answer = get_user_input("Do you want to start again (y/n)? ")
+    if answer == 'y':
+        select_difficulty()
+    else:
+        print "Thanks for playing with us. See you soon!"
+        quit()
+        
+def wrong_answer(total_trials,trials):
+    
+    # if not add trial counter and ask again
+    trials += 1
+    if total_trials-trials == 0:
+        no_trials_left()
+        
+    print ("You gave the wrong answer. You have %s trials left, Try again!"%(total_trials-trials))
+    
+    return trials
+    
+def obtain_game_answer(answer_list,quiz):
+    # Taking the quiz and answer_list as inputs
+    # returns the question and answer from the user
+    
+    # Finds the next value to replace
+    question = make_question(answer_list,quiz)
+    # Build the question for the user
+    question_text = "What's is the value of " + question  + "? "
+    # gets the user answer
+    answer = get_user_input(question_text)
+    
+    return question, answer
+    
+def answer_the_user(question,answer,answer_list,quiz,trials,total_trials):
+    # Answer the user according to the question and anser and
+    # update the quiz and trials left
+    if check_answer(question,answer,answer_list):
+        quiz = replace_string(question,answer,quiz)
+    else:
+        trials = wrong_answer(total_trials,trials)
+        
+    print_quiz(quiz)
+        
+    return quiz, trials
+    
+
+def play_game():
+    # Starts the game, asking first the user to select the difficulty and 
+    # keeps getting the answer from the user and checking them. Finally it ends
+    # when the user finishes the number of trials or completes the quiz.
+      
+    # Sets up the game variables and informs user according to it's selection       
+    selection, quiz, total_trials, answer_list = select_difficulty() 
+    quiz_not_completed, trials = True,0
+    
+    print_game_start(selection, total_trials, quiz)
     
     while(quiz_not_completed):
-        
-        # Finds the next value to replace
-        question = make_question(answer_list,quiz)
-        # Build the question for the user
-        question_text = "What's is the value of " + question  + "? "
-        
-        # gets the user answer
-        answer = get_user_input(question_text)
-        
-        # check if the answer is right
-        if check_answer(question,answer,answer_list):
-            quiz = replace_string(question,answer,quiz)
-            
-        else:
-            # if not add trial counter and ask again
-            trials += 1
-            if total_trials-trials == 0:
-                print "The game is over. You have no trials left."
-                answer = get_user_input("Do you want to start again (y/n)? ")
-                if answer == 'y':
-                    select_difficulty()
-                else:
-                    print "Thanks for playing with us. See you soon!"
-                    quit()
-            print ("You gave the wrong answer. You have %s trials left, Try again!"%(total_trials-trials))
-            #print quiz
-        print "*"*120 + "\n"    
-        print quiz
-        print "*"*120 + "\n"
-        
+        # obtains the answer from the user for the next word to fill in       
+        question, answer = obtain_game_answer(answer_list,quiz)
+        # checks the user answer and gives the appropiate answer
+        quiz, trials = answer_the_user(question,answer,answer_list,quiz,trials,total_trials)
         quiz_not_completed = check_quiz_not_completed(answer_list,quiz)
-    
     
     print "Congratulalions! You won!"
             
-        
 play_game()        
     
 
